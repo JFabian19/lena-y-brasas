@@ -7,14 +7,14 @@ import { DEFAULT_MENU_DATA } from './data/menuData';
 // ==========================================
 // 📋 CONFIGURACIÓN DE LA PLANTILLA DEL MENÚ
 // ==========================================
-const RESTAURANTE_NAME = "Snack Tutti Frutti";
-const RESTAURANTE_SLOGAN = "Snack y Juguería Tropical";
-const WHATSAPP_NUMBER = "51942661467"; // Reemplaza con tu número de WhatsApp con código de país
+const RESTAURANTE_NAME = "Leña y Brasas";
+const RESTAURANTE_SLOGAN = "Pollos a la brasa, broaster y platos criollos al momento";
+const WHATSAPP_NUMBER = ""; // Reemplaza con tu número de WhatsApp con código de país (ej: 51 para Perú)
 const FACEBOOK_URL = "";
-const MAPS_URL = "https://www.google.com/maps/search/?api=1&query=Puesto+E16+-+Interior+Mercado+2+-+Tarapoto";
-const LOGO_FOOTER_PATH = "/logo_tutti_frutti.png"; // Reemplaza con la ruta de tu logo en public/
-const BANNER_PATH = "/tropical_banner.png"; // Reemplaza con la ruta de tu banner en public/
-const MARQUEE_TEXT = "🍓 JUGOS FRESCOS Y NATURALES • 🌴 SABOR TROPICAL DESDE TARAPOTO • ¡PRUEBA NUESTROS ANTOJITOS DE LA SELVA! 🍍🍹 • ";
+const MAPS_URL = "";
+const LOGO_FOOTER_PATH = "/logo.png"; // Reemplaza con la ruta de tu logo en public/ (ej: /logo.png)
+const BANNER_PATH = "/banner.png"; // Reemplaza con la ruta de tu banner en public/ (ej: /banner.png)
+const MARQUEE_TEXT = "🔥 POLLO A LA BRASA • PAPAS CROCANTES • SABOR CRIOLLO • BROASTER Y SALTADOS AL MOMENTO 🔥 ";
 // ==========================================
 
 // Mapa de imágenes locales por defecto para platos conocidos (vacío por defecto para la plantilla)
@@ -309,16 +309,22 @@ export default function App() {
         >
           <div className="absolute inset-0 shimmer opacity-30 mix-blend-overlay"></div>
           <Gift size={18} className="animate-bounce shrink-0" />
-          <span>¡Ponle sabor y color a tu cumpleaños! 🍓 <span className="text-yellow-100 font-black underline">Regístrate aquí</span> y llévate un batido Tutti Frutti de cortesía para celebrar de forma tropical. 🥤🎁</span>
+          <span>¡Registra tu cumpleaños y celebra con sabor a brasa! 🎁🔥 <span className="text-yellow-100 font-black underline">Regístrate aquí</span></span>
         </motion.button>
       </div>
 
       <div className="px-5 pt-4 pb-3">
-        <div className="relative w-full rounded-3xl overflow-hidden shadow-xl aspect-[2/1] bg-gradient-to-br from-primary/10 to-secondary/15 flex flex-col items-center justify-center text-center p-4 border border-dashed border-primary/20">
-          <p className="font-dish font-bold text-primary text-sm uppercase tracking-wider">
-            aca va a imagen
-          </p>
-        </div>
+        {BANNER_PATH ? (
+          <div className="relative w-full rounded-3xl overflow-hidden shadow-xl aspect-[2/1] bg-gray-50 border border-gray-100">
+            <img src={BANNER_PATH} alt="Banner Restaurante" className="w-full h-full object-cover" />
+          </div>
+        ) : (
+          <div className="relative w-full rounded-3xl overflow-hidden shadow-xl aspect-[2/1] bg-gradient-to-br from-primary/10 to-secondary/15 flex flex-col items-center justify-center text-center p-4 border border-dashed border-primary/20">
+            <p className="font-dish font-bold text-primary text-sm uppercase tracking-wider">
+              aca va a imagen
+            </p>
+          </div>
+        )}
       </div>
 
       <div className="px-5 py-3 overflow-x-auto no-scrollbar">
@@ -358,10 +364,19 @@ export default function App() {
                   whileHover={{ y: -4 }}
                   className="bg-white rounded-[2rem] overflow-hidden flex flex-col shadow-sm border border-gray-100 hover:border-primary/30 hover:shadow-md transition-all duration-200"
                 >
-                  <div className="bg-primary/5 aspect-square flex items-center justify-center relative overflow-hidden p-4 border-b border-gray-100">
-                    <span className="font-dish font-bold text-[11px] text-primary uppercase tracking-wider text-center">
-                      aca va a imagen
-                    </span>
+                  <div className="bg-primary/5 aspect-square flex items-center justify-center relative overflow-hidden border-b border-gray-100 cursor-pointer">
+                    {dish.imagen ? (
+                      <img 
+                        src={dish.imagen} 
+                        alt={dish.nombre} 
+                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                        onClick={() => setSelectedImage(dish.imagen || null)}
+                      />
+                    ) : (
+                      <span className="font-dish font-bold text-[13px] text-primary uppercase tracking-wider text-center p-4">
+                        🔥 {dish.nombre.toLowerCase().includes("pollo") ? "🍗" : "🥩"}
+                      </span>
+                    )}
                   </div>
                   
                   <div className="p-4 flex flex-col flex-1">
@@ -408,9 +423,15 @@ export default function App() {
 
         <footer className="mt-8 pt-8 pb-10 border-t border-gray-200 flex flex-col items-center justify-center">
           <p className="font-title text-2xl text-primary mb-4">{RESTAURANTE_NAME}</p>
-          <div className="w-32 h-32 mb-6 rounded-2xl border border-dashed border-primary/30 bg-primary/5 flex items-center justify-center text-center p-2">
-            <span className="font-dish font-bold text-[10px] text-primary uppercase tracking-wide">aca va a imagen</span>
-          </div>
+          {LOGO_FOOTER_PATH ? (
+            <div className="w-32 h-32 mb-6 rounded-2xl overflow-hidden border border-gray-100 bg-white flex items-center justify-center shadow-sm">
+              <img src={LOGO_FOOTER_PATH} alt="Logo Restaurante" className="w-full h-full object-contain p-2" />
+            </div>
+          ) : (
+            <div className="w-32 h-32 mb-6 rounded-2xl border border-dashed border-primary/30 bg-primary/5 flex items-center justify-center text-center p-2">
+              <span className="font-dish font-bold text-[10px] text-primary uppercase tracking-wide">aca va a imagen</span>
+            </div>
+          )}
           <p className="text-[11px] text-gray-400 font-medium">© 2026 Todos los derechos reservados.</p>
         </footer>
 

@@ -1,21 +1,21 @@
-@import url('https://fonts.googleapis.com/css2?family=Chewy&family=Fredoka:wght@300;400;500;600;700&family=Quicksand:wght@300;400;500;600;700&family=Nunito:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 
 @theme {
   /* CAMBIA AQUÍ LAS TIPOGRAFÍAS DEL MENÚ (Usa Google Fonts) */
-  --font-sans: "Nunito", "Inter", system-ui, -apple-system, sans-serif;
-  --font-title: "Chewy", sans-serif;   /* Tipografía para Títulos (ej. Chewy, Playfair, etc.) */
-  --font-category: "Fredoka", sans-serif; /* Tipografía para Categorías */
-  --font-dish: "Quicksand", sans-serif;     /* Tipografía para Platos y Precios */
-  --font-slogan: "Quicksand", sans-serif;  /* Tipografía para Eslogans/Marquee (ej. Quicksand) */
+  --font-sans: "Poppins", system-ui, -apple-system, sans-serif;
+  --font-title: "Bebas Neue", sans-serif;   /* Tipografía para Títulos */
+  --font-category: "Bebas Neue", sans-serif; /* Tipografía para Categorías */
+  --font-dish: "Poppins", sans-serif;     /* Tipografía para Platos y Precios */
+  --font-slogan: "Poppins", sans-serif;  /* Tipografía para Eslogans/Marquee */
   
   /* CAMBIA AQUÍ LOS COLORES DEL MENÚ (Usa formato HEX) */
-  --color-primary: #E91E63;      /* Color principal de la marca (Fucsia/Magenta) */
-  --color-secondary: #8BC34A;    /* Color de acento/secundario (Verde Kiwi) */
-  --color-dark: #4A148C;         /* Color de texto oscuro principal (Morado Oscuro) */
-  --color-light: #FDF2F8;        /* Color de fondo del body (Rosa Pálido) */
+  --color-primary: #E85D2A;      /* Color principal (Naranja Brasa) */
+  --color-secondary: #F59E0B;    /* Color secundario (Amarillo-Naranja) */
+  --color-dark: #151515;         /* Color oscuro (Texto/Fondo oscuro) */
+  --color-light: #FFF7ED;        /* Color de fondo general (Crema/Peach) */
   
-  --shadow-glass: 0 8px 32px 0 rgba(233, 30, 99, 0.08);
+  --shadow-glass: 0 8px 32px 0 rgba(232, 93, 42, 0.08);
   --glass-bg: rgba(255, 255, 255, 0.95);
   --glass-border: rgba(255, 255, 255, 0.4);
 }
