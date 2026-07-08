@@ -39,7 +39,17 @@ interface CartItem {
   nombre: string;
   precio: string;
   cantidad: number;
+  opcion?: string;
+  cremas?: string[];
+  nota?: string;
 }
+
+const isQuarterChicken = (name: string): boolean => {
+  const normalized = name.toLowerCase();
+  return (normalized.includes("1/4") || normalized.includes("un cuarto")) && 
+         normalized.includes("pollo") && 
+         normalized.includes("brasa");
+};
 
 export default function App() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -48,6 +58,18 @@ export default function App() {
   const [showSummary, setShowSummary] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
+  // States for customization
+  const [selectedCustomizationDish, setSelectedCustomizationDish] = useState<Dish | null>(null);
+  const [customizationOptions, setCustomizationOptions] = useState<{
+    opcion: string;
+    cremas: string[];
+    nota: string;
+  }>({
+    opcion: "con papas fritas y ensalada clásica",
+    cremas: [],
+    nota: ""
+  });
 
   // States for Birthday Form
   const [showBirthdayForm, setShowBirthdayForm] = useState(false);
@@ -130,10 +152,10 @@ export default function App() {
 
   const addToCart = (dish: Dish) => {
     setCart(prev => {
-      const existing = prev.find(i => i.nombre === dish.nombre && i.precio === dish.precio);
+      const existing = prev.find(i => i.nombre === dish.nombre && i.precio === dish.precio && !i.opcion);
       if (existing) {
         return prev.map(i =>
-          (i.nombre === dish.nombre && i.precio === dish.precio)
+          (i.nombre === dish.nombre && i.precio === dish.precio && !i.opcion)
             ? { ...i, cantidad: i.cantidad + 1 }
             : i
         );
@@ -142,11 +164,55 @@ export default function App() {
     });
   };
 
-  const updateQuantity = (nombre: string, precio: string, delta: number) => {
+  const addCustomizedToCart = (dish: Dish, opcion: string, cremas: string[], nota: string) => {
+    setCart(prev => {
+      const existing = prev.find(i => 
+        i.nombre === dish.nombre && 
+        i.precio === dish.precio &&
+        i.opcion === opcion &&
+        JSON.stringify(i.cremas) === JSON.stringify(cremas) &&
+        i.nota === nota
+      );
+      if (existing) {
+        return prev.map(i =>
+          (i.nombre === dish.nombre && 
+           i.precio === dish.precio &&
+           i.opcion === opcion &&
+           JSON.stringify(i.cremas) === JSON.stringify(cremas) &&
+           i.nota === nota)
+            ? { ...i, cantidad: i.cantidad + 1 }
+            : i
+        );
+      }
+      return [...prev, { 
+        nombre: dish.nombre, 
+        precio: dish.precio, 
+        cantidad: 1, 
+        opcion, 
+        cremas, 
+        nota 
+      }];
+    });
+  };
+
+  const updateQuantity = (
+    nombre: string,
+    precio: string,
+    delta: number,
+    opcion?: string,
+    cremas?: string[],
+    nota?: string
+  ) => {
     setCart(prev =>
       prev
         .map(i => {
-          if (i.nombre === nombre && i.precio === precio) {
+          if (
+            i.nombre === nombre &&
+            i.precio === precio &&
+            i.opcion === opcion &&
+            JSON.stringify(i.cremas) === JSON.stringify(cremas) &&
+            i.nota === nota
+          ) {
             const newQty = i.cantidad + delta;
             return newQty > 0 ? { ...i, cantidad: newQty } : null;
           }
@@ -168,7 +234,18 @@ export default function App() {
     const total = calculateTotal();
     let message = `*Hola ${RESTAURANTE_NAME}, deseo realizar un pedido:*\n\n`;
     cart.forEach(item => {
-      message += `• ${item.cantidad} x ${item.nombre} (${item.precio})\n`;
+      let itemDetails = `• ${item.cantidad} x ${item.nombre}`;
+      if (item.opcion) {
+        itemDetails += `\n  - ${item.opcion}`;
+      }
+      if (item.cremas && item.cremas.length > 0) {
+        itemDetails += `\n  - Cremas: ${item.cremas.join(', ')}`;
+      }
+      if (item.nota) {
+        itemDetails += `\n  - Nota: ${item.nota}`;
+      }
+      itemDetails += ` (${item.precio})\n`;
+      message += itemDetails;
     });
     message += `\n*TOTAL: S/.${total.toFixed(2)}*`;
     const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
@@ -395,7 +472,18 @@ export default function App() {
                       </span>
                       <motion.button
                         whileTap={{ scale: 0.8 }}
-                        onClick={() => addToCart(dish)}
+                        onClick={() => {
+                          if (isQuarterChicken(dish.nombre)) {
+                            setSelectedCustomizationDish(dish);
+                            setCustomizationOptions({
+                              opcion: "con papas fritas y ensalada clásica",
+                              cremas: [],
+                              nota: ""
+                            });
+                          } else {
+                            addToCart(dish);
+                          }
+                        }}
                         className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center text-primary transition-colors duration-200 shrink-0"
                       >
                         <Plus size={16} strokeWidth={3} />
@@ -505,32 +593,50 @@ export default function App() {
                 </button>
               </div>
               <div className="space-y-3 mb-8">
-                {cart.map(item => (
-                  <div
-                    key={`${item.nombre}-${item.precio}`}
-                    className="flex items-center gap-4 bg-gray-50 p-4 rounded-2xl"
-                  >
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-dish font-semibold text-dark text-sm truncate">{item.nombre}</h4>
-                      <p className="font-dish text-xs text-primary font-bold">{item.precio}</p>
-                    </div>
-                    <div className="flex items-center gap-3 bg-white px-3 py-1.5 rounded-xl border border-gray-100">
-                      <button onClick={() => updateQuantity(item.nombre, item.precio, -1)} className="text-gray-400">
-                        <Minus size={16} />
-                      </button>
-                      <span className="font-dish font-bold text-sm w-4 text-center">{item.cantidad}</span>
-                      <button onClick={() => updateQuantity(item.nombre, item.precio, 1)} className="text-primary">
-                        <Plus size={16} />
-                      </button>
-                    </div>
-                    <button
-                      onClick={() => updateQuantity(item.nombre, item.precio, -item.cantidad)}
-                      className="text-red-300 ml-1"
+                {cart.map(item => {
+                  const itemKey = `${item.nombre}-${item.precio}-${item.opcion || ''}-${(item.cremas || []).join(',')}-${item.nota || ''}`;
+                  return (
+                    <div
+                      key={itemKey}
+                      className="flex items-center gap-4 bg-gray-50 p-4 rounded-2xl animate-fade-in"
                     >
-                      <Trash2 size={18} />
-                    </button>
-                  </div>
-                ))}
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-dish font-semibold text-dark text-sm truncate">{item.nombre}</h4>
+                        {item.opcion && (
+                          <p className="text-[10px] text-gray-500 font-medium mt-0.5">
+                            Acompañamiento: <span className="text-secondary font-semibold">{item.opcion}</span>
+                          </p>
+                        )}
+                        {item.cremas && item.cremas.length > 0 && (
+                          <p className="text-[10px] text-gray-500 font-medium mt-0.5">
+                            Cremas: <span className="text-primary font-semibold">{item.cremas.join(', ')}</span>
+                          </p>
+                        )}
+                        {item.nota && (
+                          <p className="text-[10px] text-gray-500 font-medium italic mt-0.5">
+                            Nota: "{item.nota}"
+                          </p>
+                        )}
+                        <p className="font-dish text-xs text-primary font-bold mt-1">{item.precio}</p>
+                      </div>
+                      <div className="flex items-center gap-3 bg-white px-3 py-1.5 rounded-xl border border-gray-100">
+                        <button onClick={() => updateQuantity(item.nombre, item.precio, -1, item.opcion, item.cremas, item.nota)} className="text-gray-400">
+                          <Minus size={16} />
+                        </button>
+                        <span className="font-dish font-bold text-sm w-4 text-center">{item.cantidad}</span>
+                        <button onClick={() => updateQuantity(item.nombre, item.precio, 1, item.opcion, item.cremas, item.nota)} className="text-primary">
+                          <Plus size={16} />
+                        </button>
+                      </div>
+                      <button
+                        onClick={() => updateQuantity(item.nombre, item.precio, -item.cantidad, item.opcion, item.cremas, item.nota)}
+                        className="text-red-300 ml-1"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
               <div className="border-t border-dashed border-gray-200 pt-6 mb-8">
                 <div className="flex justify-between items-center">
@@ -732,6 +838,151 @@ export default function App() {
                   </button>
                 </form>
               )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {selectedCustomizationDish && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[80] bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4"
+          >
+            <motion.div
+              initial={{ y: "100%", scale: 1 }}
+              animate={{ y: 0, scale: 1 }}
+              exit={{ y: "100%", scale: 0.95 }}
+              transition={{ type: "spring", damping: 25, stiffness: 250 }}
+              className="bg-white w-full max-w-md rounded-t-[2.5rem] sm:rounded-[2.5rem] p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto"
+            >
+              <button
+                onClick={() => setSelectedCustomizationDish(null)}
+                className="absolute top-5 right-5 w-9 h-9 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors cursor-pointer"
+              >
+                <X size={18} className="text-gray-500" />
+              </button>
+
+              <div className="flex flex-col mb-6 mt-2">
+                <span className="text-[10px] font-bold text-primary uppercase tracking-widest mb-1">Personalización</span>
+                <h2 className="font-title text-2xl text-dark leading-tight">{selectedCustomizationDish.nombre}</h2>
+                <p className="text-xs text-gray-400 mt-1">{selectedCustomizationDish.descripcion}</p>
+              </div>
+
+              <div className="space-y-6">
+                {/* 1. Acompañamiento */}
+                <div>
+                  <h3 className="text-xs font-bold text-gray-600 uppercase tracking-wider mb-3">1. Selecciona tu Opción</h3>
+                  <div className="space-y-2.5">
+                    {[
+                      { id: "opcion-1", text: "con papas fritas y ensalada clásica", label: "Opción 1: Con ensalada clásica" },
+                      { id: "opcion-2", text: "con papas fritas y arroz chaufa", label: "Opción 2: Con arroz chaufa" }
+                    ].map(opt => {
+                      const isSelected = customizationOptions.opcion === opt.text;
+                      return (
+                        <div
+                          key={opt.id}
+                          onClick={() => setCustomizationOptions(prev => ({ ...prev, opcion: opt.text }))}
+                          className={`p-4 rounded-2xl border-2 cursor-pointer transition-all duration-200 flex items-center justify-between
+                            ${isSelected 
+                              ? 'border-primary bg-primary/5 shadow-sm' 
+                              : 'border-gray-100 bg-gray-50/50 hover:bg-gray-50'
+                            }`}
+                        >
+                          <div className="flex flex-col">
+                            <span className={`text-[13px] font-bold ${isSelected ? 'text-primary' : 'text-dark'}`}>{opt.label}</span>
+                            <span className="text-[10px] text-gray-400 capitalize mt-0.5">{opt.text}</span>
+                          </div>
+                          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all
+                            ${isSelected ? 'border-primary bg-primary text-white' : 'border-gray-300'}`}
+                          >
+                            {isSelected && <div className="w-2.5 h-2.5 rounded-full bg-white animate-scale-up" />}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* 2. Cremas */}
+                <div>
+                  <h3 className="text-xs font-bold text-gray-600 uppercase tracking-wider mb-3">2. Cremas (Opcional)</h3>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { id: "mayo", label: "Mayonesa", value: "Mayonesa" },
+                      { id: "ketchup", label: "Ketchup", value: "Ketchup" },
+                      { id: "aji", label: "Ají de Pollería", value: "Ají de Pollería" }
+                    ].map(crema => {
+                      const isSelected = customizationOptions.cremas.includes(crema.value);
+                      return (
+                        <button
+                          key={crema.id}
+                          type="button"
+                          onClick={() => {
+                            setCustomizationOptions(prev => {
+                              const alreadySelected = prev.cremas.includes(crema.value);
+                              const newCremas = alreadySelected
+                                ? prev.cremas.filter(c => c !== crema.value)
+                                : [...prev.cremas, crema.value];
+                              return { ...prev, cremas: newCremas };
+                            });
+                          }}
+                          className={`p-3 rounded-2xl border-2 text-[11px] font-bold transition-all duration-200 text-center flex flex-col items-center justify-center gap-1.5 cursor-pointer
+                            ${isSelected
+                              ? 'border-secondary bg-secondary/5 text-secondary font-black shadow-sm'
+                              : 'border-gray-100 bg-gray-50/50 text-gray-500 hover:bg-gray-50'
+                            }`}
+                        >
+                          <span className="text-lg">{crema.id === 'mayo' ? '🥛' : crema.id === 'ketchup' ? '🥫' : '🌶️'}</span>
+                          {crema.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* 3. Notas */}
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <h3 className="text-xs font-bold text-gray-600 uppercase tracking-wider">3. Nota Adicional</h3>
+                    <span className="text-[9px] text-gray-400 font-medium">Opcional</span>
+                  </div>
+                  <textarea
+                    rows={2}
+                    value={customizationOptions.nota}
+                    onChange={e => setCustomizationOptions(prev => ({ ...prev, nota: e.target.value }))}
+                    className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-4 py-3 text-xs focus:outline-none focus:border-primary/50 transition-colors resize-none placeholder:text-gray-300"
+                    placeholder="Ej: ensalada sin pepino, papas bien cocidas, etc."
+                  />
+                </div>
+              </div>
+
+              <div className="mt-8 flex flex-col gap-2">
+                <motion.button
+                  whileHover={{ scale: 1.01 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => {
+                    addCustomizedToCart(
+                      selectedCustomizationDish,
+                      customizationOptions.opcion,
+                      customizationOptions.cremas,
+                      customizationOptions.nota
+                    );
+                    setSelectedCustomizationDish(null);
+                  }}
+                  className="w-full bg-primary text-white py-4 rounded-2xl font-bold text-sm shadow-xl shadow-primary/20 flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  Agregar al Pedido
+                </motion.button>
+                <button
+                  onClick={() => setSelectedCustomizationDish(null)}
+                  className="w-full py-3 text-xs font-bold text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+                >
+                  Cancelar
+                </button>
+              </div>
             </motion.div>
           </motion.div>
         )}
