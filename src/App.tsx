@@ -9,7 +9,7 @@ import { DEFAULT_MENU_DATA } from './data/menuData';
 // ==========================================
 const RESTAURANTE_NAME = "Leña y Brasas";
 const RESTAURANTE_SLOGAN = "Pollos a la brasa, broaster y platos criollos al momento";
-const WHATSAPP_NUMBER = ""; // Reemplaza con tu número de WhatsApp con código de país (ej: 51 para Perú)
+const WHATSAPP_NUMBER = "51979345827"; // Reemplaza con tu número de WhatsApp con código de país (ej: 51 para Perú)
 const FACEBOOK_URL = "";
 const MAPS_URL = "";
 const LOGO_FOOTER_PATH = "/logo.png"; // Reemplaza con la ruta de tu logo en public/ (ej: /logo.png)
